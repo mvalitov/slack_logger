@@ -19,7 +19,7 @@ defmodule SlackLogger.MixProject do
 
   def package do
     [name: :slack_logger,
-     files: ["lib", "data", "mix.exs"],
+     files: ["lib", "mix.exs"],
      maintainers: ["Marsel Valitov"],
      licenses: ["MIT"],
      links: %{"Github" => "https://github.com/mvalitov/slack_logger"}]
