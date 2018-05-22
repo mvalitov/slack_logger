@@ -27,6 +27,10 @@ defmodule SlackLogger do
     {:ok, state}
   end
 
+  def handle_info(_, state) do
+    {:ok, state}
+  end
+
   defp log_event(_level, _msg, _ts, _md, %{url: nil} = state) do
     {:ok, state}
   end
