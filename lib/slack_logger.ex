@@ -1,11 +1,11 @@
 defmodule SlackLogger do
+  alias SlackLogger.{Slack, Formatter}
   @moduledoc """
   """
 
   @behaviour :gen_event
 
   @default_format "$time $metadata[$level] $message\n"
-  @headers [{"Content-Type", "application/json"}]
 
   def init({__MODULE__, name}) do
     {:ok, configure(name, [])}
@@ -35,21 +35,9 @@ defmodule SlackLogger do
     {:ok, state}
   end
 
-  defp log_event(level, msg, ts, md, %{url: url} = state) when is_binary(url) do
-    output = format_event(level, msg, ts, md, state)
-    post_log(url, output)
+  defp log_event(level, msg, _ts, md, %{url: url} = state) when is_binary(url) do
+    Slack.post_log(url, Formatter.format_event(msg, level, md))
     {:ok, state}
-  end
-
-  defp post_log(url, output) do
-    case Jason.encode(%{text: :binary.list_to_bin(output)}) do
-        {:ok, json} ->
-            case HTTPoison.post(url, json, @headers) do
-                {:ok, %HTTPoison.Response{body: "ok"}} -> true
-                {:error, reason} -> IO.inspect(reason)
-            end
-        {:error, reason} -> IO.inspect(reason)
-    end
   end
 
   defp configure(name, opts) do
@@ -72,10 +60,6 @@ defmodule SlackLogger do
     %{state | name: name, format: format, level: level, metadata: metadata, metadata_filter: metadata_filter, url: url}
   end
 
-  defp format_event(level, msg, ts, md, %{format: format, metadata: keys}) do
-    Logger.Formatter.format(format, level, msg, ts, take_metadata(md, keys))
-  end
-
   @doc false
   @spec metadata_matches?(Keyword.t, nil|Keyword.t) :: true|false
   def metadata_matches?(_md, nil), do: true
@@ -86,17 +70,6 @@ defmodule SlackLogger do
         metadata_matches?(md, rest)
       _ -> false #fail on first mismatch
     end
-  end
-
-  defp take_metadata(metadata, keys) do
-    metadatas = Enum.reduce(keys, [], fn key, acc ->
-      case Keyword.fetch(metadata, key) do
-        {:ok, val} -> [{key, val} | acc]
-        :error     -> acc
-      end
-    end)
-
-    Enum.reverse(metadatas)
   end
 
 end

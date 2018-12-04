@@ -11,7 +11,7 @@ Add `slack_logger` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:slack_logger, "~> 0.1.1"}
+    {:slack_logger, "~> 0.2.0"}
   ]
 end
 ```
@@ -29,6 +29,5 @@ config :logger,
 
 config :logger, :error,
     level: :error,
-    url: "https://hooks.slack.com/services/***",
-    format: "$date $time $metadata[$level] $message\n"
+    url: "https://hooks.slack.com/services/***"
 ```
